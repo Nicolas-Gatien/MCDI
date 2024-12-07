@@ -1,6 +1,5 @@
 use reqwest::{self, blocking::Response};
-use std::fs::{self, File};
-use std::io::Write;
+use std::fs;
 use whoami;
 use regex::Regex;
 
@@ -9,7 +8,7 @@ fn minecraft_folder() -> String {
     return path;
 }
 
-fn get_path_minecraft_world() -> String {
+fn get_current_world_name() -> String {
     let logpath: String = format!("{}/logs/latest.log", minecraft_folder());
     let contents: String = fs::read_to_string(&logpath).expect("Should have been able to read file");
     
@@ -20,27 +19,27 @@ fn get_path_minecraft_world() -> String {
     }
 }
 
-fn fetch_datapack() -> Result<(), Box<dyn std::error::Error>> {
+fn fetch_datapack() -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let url: &str = "http://138.197.135.52/api/get/cur";
     let response: Response = reqwest::blocking::get(url)?;
 
     if response.status().is_success() {
-        let bytes = response.bytes()?;
-        let filename = "downloaded.zip";
-        let mut file = File::create(&filename)?;
-        file.write_all(&bytes)?;
-
-        println!("File download successful! {}", &filename);
+        let bytes = response.bytes()?.to_vec();
+        Ok(bytes)
     } else {
-        println!("Failed to download file. Status: {}", response.status());
+        Err(format!("Failed to download file. Status: {}", response.status()).into())
     }
-
-    Ok(())
 } 
 
 fn main() {
-    let current_world_path = get_path_minecraft_world();
-    let destination = format!("{}/saves/{}/datapacks", minecraft_folder(), &current_world_path);
+    let world_name = get_current_world_name();
+    let destination = format!("{}/saves/{}/datapacks", minecraft_folder(), &world_name);
 
-    println!("{}", &destination);
+    let datapack = fetch_datapack();
+
+    if datapack.is_ok() {
+        let path = format!("{}/datapack.zip", &destination);
+        let bytes = datapack.unwrap();
+        fs::write(&path, &bytes).expect("Unable to write file");
+    }
 }
