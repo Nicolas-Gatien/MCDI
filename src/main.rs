@@ -1,6 +1,7 @@
 use reqwest::{self, blocking::Response};
 use std::fs;
 use std::fs::File;
+use std::path::Path;
 use std::io;
 use whoami;
 use regex::Regex;
@@ -54,6 +55,8 @@ fn main() {
 
     if datapack.is_ok() {
         let path = format!("{}/{}.zip", &destination, &datapack_name);
+        let base_destination = Path::new(&destination);
+
         let bytes = datapack.unwrap();
         fs::write(&path, &bytes).expect("Unable to write file");
 
@@ -64,9 +67,10 @@ fn main() {
             let mut file = archive.by_index(i).unwrap();
 
             let outpath = match file.enclosed_name() {
-                Some(path) => path.to_owned(),
+                Some(path) => base_destination.join(path),
                 None => continue,
             };
+            
             {
                 let comment = file.comment();
                 if !comment.is_empty() {
