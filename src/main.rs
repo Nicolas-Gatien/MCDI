@@ -49,7 +49,7 @@ fn main() {
     let datapack = fetch_datapack(datapack_name);
 
     if datapack.is_ok() {
-        let path = format!("{}/datapack.zip", &destination);
+        let path = format!("{}/{}.zip", &destination, &datapack_name);
         let bytes = datapack.unwrap();
         fs::write(&path, &bytes).expect("Unable to write file");
     } else {

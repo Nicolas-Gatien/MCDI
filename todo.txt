@@ -1,2 +1,6 @@
-- [ ] Download Archive to Specific Folder
-- [ ] Create CLI
+- [x] Download Archive to Specific Folder
+- [x] Create CLI
+- [ ] Add to path variables
+- [ ] Add setup to README
+- [ ] Unzip the Archive
+- [x] Get the file name from the cli
